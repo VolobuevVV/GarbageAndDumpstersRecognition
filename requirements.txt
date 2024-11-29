@@ -1,0 +1,13 @@
+clickhouse-driver==0.2.9
+docker==7.1.0
+matplotlib==3.9.1
+numpy==1.26.4
+opencv-python==4.10.0.84
+roboflow==1.1.47
+zipp==3.19.2
+shapely==2.0.6
+lapx==0.5.11
+ncnn==1.0.20240820
+grpcio==1.66.1
+grpcio-tools==1.66.1
+protobuf==5.27.2

@@ -1,0 +1,48 @@
+services:
+  gad_recognition:
+    image: gad_recognition
+    devices:
+      # ls /dev/video* для получения списка камер подключенных по USB
+      - /dev/video1:/dev/video1
+    container_name: gad_recognition
+    privileged: true
+    environment:
+      #/dev/video1 для USB камеры
+      - VIDEO_PATH=rtsp://admin:vvv222@192.168.1.3:554/stream2
+      #Может быть линией или фигурой, координаты задаются относительно велечин w (ширина кадра) и h (высота кадра) и числами
+      #- REGION_OF_DETECTION=[(w * 0, h // 2), (w * 1, h // 2), (w * 0.5, h * 0.67), (0,  h * 0.8)]
+      #Интервал времени проверки
+      - CHECK_TIME_INTERVAL=120
+      #Хост и порт для подключения к базе данных
+      - HOST=clickhouse-server
+      - PORT=9000
+      #Хост и порт для GRPC
+      - GRPC_HOST=0.0.0.0
+      - GRPC_PORT=1539
+      #Часовой пояс
+      - TZ=Europe/Moscow
+    ports:
+      - "6000:1539"
+    deploy:
+      resources:
+        limits:
+          cpus: '3'
+          memory: 1024M
+
+
+  clickhouse-server:
+    image: clickhouse/clickhouse-server:24.8-alpine
+    container_name: clickhouse-server
+    ports:
+      - "7500:8123"
+      - "8500:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+volumes:
+  clickhouse_data:
