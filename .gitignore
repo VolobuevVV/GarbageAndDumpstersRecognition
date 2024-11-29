@@ -1,0 +1,11 @@
+*.tmp
+__init__.py
+garbage_and_dumpsters_data.proto
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+env/
+venv/
+*.log
+*.idea
