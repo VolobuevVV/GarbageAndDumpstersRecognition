@@ -1,11 +1,16 @@
 import numpy as np
-from PIL import Image
 from ultralytics import YOLO
 
 
 def get_boxes(model, path):
     results = model.predict(path, conf=0.5, iou=0.7, agnostic_nms=True, verbose=False)
-    return results[0].boxes
+    boxes = results[0].boxes
+
+    xyxy_array = boxes.xyxy.cpu().numpy()
+    conf_array = boxes.conf.cpu().numpy()
+    cls_array = boxes.cls.cpu().numpy()
+
+    return xyxy_array, conf_array, cls_array
 
 
 def compute_iou(xyxy1, xyxy2):
@@ -18,32 +23,41 @@ def compute_iou(xyxy1, xyxy2):
     return intersection / union if union > 0 else 0
 
 
-def combine_and_filter_boxes(boxes1, boxes2, threshold_iou=0.8):
+def combine_and_filter_boxes(xyxy1, conf1, cls1, xyxy2, conf2, cls2, threshold_iou=0.8):
     combined_results = {}
 
-    for boxes in [boxes1, boxes2]:
-        for i in range(len(boxes.xyxy)):
-            key = tuple(boxes.xyxy[i].tolist())
-            if key not in combined_results or boxes.conf[i] > combined_results[key]['conf']:
-                combined_results[key] = {
-                    'xyxy': boxes.xyxy[i],
-                    'conf': boxes.conf[i],
-                    'cls': boxes.cls[i]
-                }
+    for i in range(len(xyxy1)):
+        key = tuple(xyxy1[i].tolist())
+        if key not in combined_results or conf1[i] > combined_results[key]['conf']:
+            combined_results[key] = {
+                'xyxy': xyxy1[i],
+                'conf': conf1[i],
+                'cls': cls1[i]
+            }
+
+    for i in range(len(xyxy2)):
+        key = tuple(xyxy2[i].tolist())
+        if key not in combined_results or conf2[i] > combined_results[key]['conf']:
+            combined_results[key] = {
+                'xyxy': xyxy2[i],
+                'conf': conf2[i],
+                'cls': cls2[i]
+            }
 
     filtered_results = []
     for res in combined_results.values():
         keep = True
         for fr in filtered_results:
-            if compute_iou(res['xyxy'].numpy(), fr['xyxy'].numpy()) > threshold_iou:
+            if compute_iou(res['xyxy'], fr['xyxy']) > threshold_iou:
                 if res['conf'] < fr['conf']:
                     keep = False
                     break
                 else:
-                    filtered_results.remove(fr)
+                    filtered_results = [f for f in filtered_results if not np.array_equal(f['xyxy'], fr['xyxy'])]
                     break
         if keep:
             filtered_results.append(res)
+
 
     return filtered_results
 
@@ -163,8 +177,6 @@ def small_trash_detect(image, model, detections, is_boxes=True):
     else:
         count_of_containers = detections.size
     results = model(image, conf=0.5, agnostic_nms=True, verbose=False, max_det=50)
-    image = Image.fromarray(results[0].plot())
-    image.show()
     num_detections = len(results[0].boxes.data)
     trash_level = num_detections / count_of_containers if count_of_containers > 0 else 0
     if trash_level < 0.1:
@@ -247,7 +259,7 @@ def get_info(detections, is_boxes=True):
         count_of_full = (detections[2].boxes.cls.eq(2)).sum().item()
         return count_of_closed, count_of_empty, count_of_full
     else:
-        cls = np.array([res['cls'].numpy() for res in detections])
+        cls = np.array([res['cls'] for res in detections])
         count_of_closed = (cls == 0).sum().item()
         count_of_empty = (cls == 1).sum().item()
         count_of_full = (cls == 2).sum().item()
@@ -278,9 +290,9 @@ def confirmation_of_the_results(frame, results, model1, model2, is_boxes=True):
 
 
 def combine_results(model1, model2, path):
-    boxes1 = get_boxes(model1, path)
-    boxes2 = get_boxes(model2, path)
-    return combine_and_filter_boxes(boxes1, boxes2)
+    xyxy1, conf1, cls1 = get_boxes(model1, path)
+    xyxy2, conf2, cls2 = get_boxes(model2, path)
+    return combine_and_filter_boxes(xyxy1, conf1, cls1, xyxy2, conf2, cls2)
 
 
 def load_model(path):

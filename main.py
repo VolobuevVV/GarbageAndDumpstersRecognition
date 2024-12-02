@@ -23,7 +23,6 @@ def capture_stream(video_path: str, model1_for_containers: YOLO, model2_for_cont
 
   client = get_client()
   last_processed_time = time.time()
-
   print("Началось чтение видеопотока")
 
   while True:
@@ -33,8 +32,9 @@ def capture_stream(video_path: str, model1_for_containers: YOLO, model2_for_cont
       current_time = time.time()
 
       if current_time - last_processed_time >= time_interval:
+          last_processed_time = current_time
           filtered_results = helper.combine_results(model1_for_containers, model2_for_containers, frame)
-          detections = np.array([res['xyxy'].numpy() for res in filtered_results])
+          detections = np.array([res['xyxy'] for res in filtered_results])
           image = helper.crop_to_diagonal_between_containers(frame, detections, is_boxes=False)
           small_trash_level = helper.small_trash_detect(image, model_for_small_trash, detections, is_boxes=False)
           large_trash_level = helper.large_trash_detect(image, model_for_large_trash, detections, is_boxes=False)
@@ -42,6 +42,9 @@ def capture_stream(video_path: str, model1_for_containers: YOLO, model2_for_cont
           client.execute(
               ''' INSERT INTO results (full_cans, empty_cans, closed_cans, small_garbage_level, large_garbage_level, detection_time) VALUES ''',
               count_of_full, count_of_empty, count_of_closed, small_trash_level, large_trash_level, current_time)
+      else:
+          continue
+
   cap.release()
   client.disconnect()
   print("Видеопоток закрыт")
@@ -88,7 +91,7 @@ if __name__ == "__main__":
     model_for_large_trash = YOLO(config['models']['model_for_large_trash'])
     time_interval = os.getenv("CHECK_TIME_INTERVAL")
 
-    capture_stream_process = Process(target=capture_stream, args=(video_path, model1_for_containers, model2_for_containers, model_for_small_trash, model_for_large_trash, time_interval, ))
+    capture_stream_process = Process(target=capture_stream, args=(video_path, model1_for_containers, model2_for_containers, model_for_small_trash, model_for_large_trash, time_interval,))
     capture_stream_process.daemon = False
     capture_stream_process.start()
     server_process = Process(target=serve, args=())
@@ -98,7 +101,7 @@ if __name__ == "__main__":
     while True:
         try:
             if not capture_stream_process.is_alive():
-                capture_stream_process = Process(target=capture_stream, args=(video_path,))
+                capture_stream_process = Process(target=capture_stream, args=(video_path, model1_for_containers, model2_for_containers, model_for_small_trash, model_for_large_trash, time_interval,))
                 capture_stream_process.daemon = False
                 capture_stream_process.start()
             if not server_process.is_alive():
