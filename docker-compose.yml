@@ -9,13 +9,17 @@ services:
     environment:
       #/dev/video1 для USB камеры
       - VIDEO_PATH=rtsp://admin:vvv222@192.168.1.3:554/stream2
-      #Может быть линией или фигурой, координаты задаются относительно велечин w (ширина кадра) и h (высота кадра) и числами
+      #Может только фигурой, координаты задаются относительно велечин w (ширина кадра) и h (высота кадра) и числами
       #- REGION_OF_DETECTION=[(w * 0, h // 2), (w * 1, h // 2), (w * 0.5, h * 0.67), (0,  h * 0.8)]
+      - REGION_OF_DETECTION=whole_image
       #Интервал времени проверки
       - CHECK_TIME_INTERVAL=120
-      #Хост и порт для подключения к базе данных
-      - HOST=clickhouse-server
-      - PORT=9000
+      #Подключение к базе данных
+      - DBNAME=database
+      - USER=user
+      - PASSWORD=password
+      - HOST=timescale-db
+      - PORT=5432
       #Хост и порт для GRPC
       - GRPC_HOST=0.0.0.0
       - GRPC_PORT=1539
@@ -26,18 +30,21 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '3'
+          cpus: '4'
           memory: 1024M
 
 
-  clickhouse-server:
-    image: clickhouse/clickhouse-server:24.8-alpine
-    container_name: clickhouse-server
+  timescale-db:
+    image: timescale/timescaledb:latest-pg16
+    container_name: timescale-db
     ports:
-      - "7500:8123"
-      - "8500:9000"
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: database
     volumes:
-      - clickhouse_data:/var/lib/clickhouse
+      - timescale_data:/var/lib/postgresql/data
     deploy:
       resources:
         limits:
@@ -45,4 +52,4 @@ services:
           memory: 512M
 
 volumes:
-  clickhouse_data:
+  timescale_data:

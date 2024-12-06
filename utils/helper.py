@@ -1,6 +1,75 @@
+import math
+from PIL import Image, ImageDraw
+import cv2
 import numpy as np
 from ultralytics import YOLO
 
+def select_area_for_detection(frame, coordinates):
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+    image = Image.fromarray(frame_rgb)
+    mask = Image.new('L', image.size, 0)
+    draw = ImageDraw.Draw(mask)
+
+    draw.polygon(coordinates, fill=255)
+
+    result_image = Image.new('RGB', image.size)
+    result_image.paste(image, mask=mask)
+
+    draw_result = ImageDraw.Draw(result_image)
+    draw_result.rectangle([0, 0, image.width, image.height], fill='black')
+    result_image.paste(image, mask=mask)
+
+    return np.array(result_image)
+
+def str_to_coordinates(string, h, w):
+    result = [(0, 0), (w, 0), (w, h), (0, h)]
+    coordinates_str = string.replace('h', str(h))
+    coordinates_str = coordinates_str.replace('w', str(w))
+
+    coordinates_str = coordinates_str.strip("[]").replace(" ", "")
+
+    if not coordinates_str:
+        print("Ошибка: область детекции пустая / задана некорректно!")
+        return result
+
+    coordinate_pairs = coordinates_str.split("),(")
+
+    coordinates = []
+
+    for pair in coordinate_pairs:
+        pair = pair.strip("()")
+
+        if not pair:
+            print("Ошибка: область детекции пустая!")
+            return result
+
+        parts = pair.split(",")
+
+        if len(parts) != 2:
+            print("Ошибка: область детекции задана некорректно!")
+            return result
+
+        try:
+            x = int(eval(parts[0]))
+            y = int(eval(parts[1]))
+
+            if not (0 <= x <= w) or not (0 <= y <= h):
+                print(f"Ошибка: координаты ({x}, {y}) области детекции выходят за пределы допустимых значений.")
+                return result
+            coordinates.append((x, y))
+        except ZeroDivisionError:
+            print("Ошибка: деление на ноль при задании области детекции!")
+            return result
+
+        except (ValueError, SyntaxError) as e:
+            print("Ошибка: область детекции задана некорректно!")
+            return result
+
+    if len(coordinates) < 3:
+        print("Ошибка: область детекции не может быть точкой или линией!")
+        return result
+    return coordinates
 
 def get_boxes(model, path):
     results = model.predict(path, conf=0.5, iou=0.7, agnostic_nms=True, verbose=False)
@@ -176,30 +245,30 @@ def small_trash_detect(image, model, detections, is_boxes=True):
         count_of_containers = len(detections[0].boxes.data)
     else:
         count_of_containers = detections.size
-    results = model(image, conf=0.5, agnostic_nms=True, verbose=False, max_det=50)
+    results = model(image, conf=0.25, agnostic_nms=True, verbose=False, max_det=50)
     num_detections = len(results[0].boxes.data)
-    trash_level = num_detections / count_of_containers if count_of_containers > 0 else 0
+    trash_level = num_detections / count_of_containers * math.log(1 + count_of_containers) if count_of_containers > 0 else 0
     if trash_level < 0.1:
         return 0
-    elif 0.1 <= trash_level < 0.5:
+    elif 0.1 <= trash_level < 0.25:
         return 1
-    elif 0.5 <= trash_level < 1:
+    elif 0.25 <= trash_level < 0.5:
         return 2
-    elif 1 <= trash_level < 1.5:
+    elif 0.5 <= trash_level < 1:
         return 3
-    elif 1.5 <= trash_level < 2:
+    elif 1 <= trash_level < 1.25:
         return 4
-    elif 2 <= trash_level < 2.5:
+    elif 1.25 <= trash_level < 1.5:
         return 5
-    elif 2.5 <= trash_level < 3:
+    elif 1.5 <= trash_level < 1.75:
         return 6
-    elif 3 <= trash_level < 4:
+    elif 1.75 <= trash_level < 2:
         return 7
-    elif 4 <= trash_level < 5:
+    elif 2.25 <= trash_level < 2.5:
         return 8
-    elif trash_level >= 5:
+    elif trash_level >= 2.5:
         return 9
-    elif trash_level > 10:
+    elif trash_level > 5:
         return 10
 
 
@@ -208,30 +277,30 @@ def large_trash_detect(image, model, detections, is_boxes=True):
         count_of_containers = len(detections[0].boxes.data)
     else:
         count_of_containers = detections.size
-    results = model(image, conf=0.5, agnostic_nms=True, verbose=False, max_det=50)
+    results = model(image, conf=0.25, agnostic_nms=True, verbose=False, max_det=50)
     num_detections = len(results[0].boxes.data)
-    trash_level = num_detections / count_of_containers if count_of_containers > 0 else 0
+    trash_level = num_detections / count_of_containers * math.log(1 + count_of_containers) if count_of_containers > 0 else 0
     if trash_level < 0.1:
         return 0
-    elif 0.1 <= trash_level < 0.5:
+    elif 0.1 <= trash_level < 0.15:
         return 1
-    elif 0.5 <= trash_level < 1:
+    elif 0.15 <= trash_level < 0.35:
         return 2
-    elif 1 <= trash_level < 1.5:
+    elif 0.35 <= trash_level < 0.5:
         return 3
-    elif 1.5 <= trash_level < 2:
+    elif 0.5 <= trash_level < 0.75:
         return 4
-    elif 2 <= trash_level < 2.5:
+    elif 0.75 <= trash_level < 1:
         return 5
-    elif 2.5 <= trash_level < 3:
+    elif 1 <= trash_level < 1.25:
         return 6
-    elif 3 <= trash_level < 4:
+    elif 1.25 <= trash_level < 1.5:
         return 7
-    elif 4 <= trash_level < 5:
+    elif 1.5 <= trash_level < 1.75:
         return 8
-    elif trash_level >= 5:
+    elif trash_level >= 1.75:
         return 9
-    elif trash_level > 10:
+    elif trash_level > 3:
         return 10
 
 

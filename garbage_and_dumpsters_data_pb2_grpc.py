@@ -25,6 +25,78 @@ if _version_not_supported:
     )
 
 
+class DumpstersAndGarbageServiceStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.GetDumpstersAndGarbage = channel.unary_unary(
+                '/garbage_and_dumpsters_data.DumpstersAndGarbageService/GetDumpstersAndGarbage',
+                request_serializer=garbage__and__dumpsters__data__pb2.Time.SerializeToString,
+                response_deserializer=garbage__and__dumpsters__data__pb2.DumpstersAndGarbageData.FromString,
+                _registered_method=True)
+
+
+class DumpstersAndGarbageServiceServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def GetDumpstersAndGarbage(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_DumpstersAndGarbageServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'GetDumpstersAndGarbage': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetDumpstersAndGarbage,
+                    request_deserializer=garbage__and__dumpsters__data__pb2.Time.FromString,
+                    response_serializer=garbage__and__dumpsters__data__pb2.DumpstersAndGarbageData.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'garbage_and_dumpsters_data.DumpstersAndGarbageService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('garbage_and_dumpsters_data.DumpstersAndGarbageService', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class DumpstersAndGarbageService(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def GetDumpstersAndGarbage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/garbage_and_dumpsters_data.DumpstersAndGarbageService/GetDumpstersAndGarbage',
+            garbage__and__dumpsters__data__pb2.Time.SerializeToString,
+            garbage__and__dumpsters__data__pb2.DumpstersAndGarbageData.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
 class DumpstersServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
@@ -97,7 +169,7 @@ class DumpstersService(object):
             _registered_method=True)
 
 
-class SmallGarbageServiceStub(object):
+class GarbageServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -106,43 +178,43 @@ class SmallGarbageServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.GetSmallGarbageLevel = channel.unary_unary(
-                '/garbage_and_dumpsters_data.SmallGarbageService/GetSmallGarbageLevel',
+        self.GetGarbageLevel = channel.unary_unary(
+                '/garbage_and_dumpsters_data.GarbageService/GetGarbageLevel',
                 request_serializer=garbage__and__dumpsters__data__pb2.Time.SerializeToString,
-                response_deserializer=garbage__and__dumpsters__data__pb2.SmallGarbageLevel.FromString,
+                response_deserializer=garbage__and__dumpsters__data__pb2.GarbageLevel.FromString,
                 _registered_method=True)
 
 
-class SmallGarbageServiceServicer(object):
+class GarbageServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def GetSmallGarbageLevel(self, request, context):
+    def GetGarbageLevel(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_SmallGarbageServiceServicer_to_server(servicer, server):
+def add_GarbageServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'GetSmallGarbageLevel': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetSmallGarbageLevel,
+            'GetGarbageLevel': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetGarbageLevel,
                     request_deserializer=garbage__and__dumpsters__data__pb2.Time.FromString,
-                    response_serializer=garbage__and__dumpsters__data__pb2.SmallGarbageLevel.SerializeToString,
+                    response_serializer=garbage__and__dumpsters__data__pb2.GarbageLevel.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'garbage_and_dumpsters_data.SmallGarbageService', rpc_method_handlers)
+            'garbage_and_dumpsters_data.GarbageService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('garbage_and_dumpsters_data.SmallGarbageService', rpc_method_handlers)
+    server.add_registered_method_handlers('garbage_and_dumpsters_data.GarbageService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class SmallGarbageService(object):
+class GarbageService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def GetSmallGarbageLevel(request,
+    def GetGarbageLevel(request,
             target,
             options=(),
             channel_credentials=None,
@@ -155,81 +227,9 @@ class SmallGarbageService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/garbage_and_dumpsters_data.SmallGarbageService/GetSmallGarbageLevel',
+            '/garbage_and_dumpsters_data.GarbageService/GetGarbageLevel',
             garbage__and__dumpsters__data__pb2.Time.SerializeToString,
-            garbage__and__dumpsters__data__pb2.SmallGarbageLevel.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-
-class LargeGarbageServiceStub(object):
-    """Missing associated documentation comment in .proto file."""
-
-    def __init__(self, channel):
-        """Constructor.
-
-        Args:
-            channel: A grpc.Channel.
-        """
-        self.GetLargeGarbageLevel = channel.unary_unary(
-                '/garbage_and_dumpsters_data.LargeGarbageService/GetLargeGarbageLevel',
-                request_serializer=garbage__and__dumpsters__data__pb2.Time.SerializeToString,
-                response_deserializer=garbage__and__dumpsters__data__pb2.LargeGarbageLevel.FromString,
-                _registered_method=True)
-
-
-class LargeGarbageServiceServicer(object):
-    """Missing associated documentation comment in .proto file."""
-
-    def GetLargeGarbageLevel(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-
-def add_LargeGarbageServiceServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-            'GetLargeGarbageLevel': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetLargeGarbageLevel,
-                    request_deserializer=garbage__and__dumpsters__data__pb2.Time.FromString,
-                    response_serializer=garbage__and__dumpsters__data__pb2.LargeGarbageLevel.SerializeToString,
-            ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-            'garbage_and_dumpsters_data.LargeGarbageService', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('garbage_and_dumpsters_data.LargeGarbageService', rpc_method_handlers)
-
-
- # This class is part of an EXPERIMENTAL API.
-class LargeGarbageService(object):
-    """Missing associated documentation comment in .proto file."""
-
-    @staticmethod
-    def GetLargeGarbageLevel(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/garbage_and_dumpsters_data.LargeGarbageService/GetLargeGarbageLevel',
-            garbage__and__dumpsters__data__pb2.Time.SerializeToString,
-            garbage__and__dumpsters__data__pb2.LargeGarbageLevel.FromString,
+            garbage__and__dumpsters__data__pb2.GarbageLevel.FromString,
             options,
             channel_credentials,
             insecure,

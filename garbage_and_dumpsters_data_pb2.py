@@ -24,25 +24,25 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n garbage_and_dumpsters_data.proto\x12\x1agarbage_and_dumpsters_data\"X\n\x0e\x44umpstersCount\x12\x15\n\rcount_of_full\x18\x01 \x01(\x05\x12\x16\n\x0e\x63ount_of_empty\x18\x02 \x01(\x05\x12\x17\n\x0f\x63ount_of_closed\x18\x03 \x01(\x05\"0\n\x11SmallGarbageLevel\x12\x1b\n\x13small_garbage_level\x18\x01 \x01(\x05\"0\n\x11LargeGarbageLevel\x12\x1b\n\x13large_garbage_level\x18\x01 \x01(\x05\"\x14\n\x04Time\x12\x0c\n\x04time\x18\x01 \x01(\x05\x32u\n\x10\x44umpstersService\x12\x61\n\x11GetDumpstersCount\x12 .garbage_and_dumpsters_data.Time\x1a*.garbage_and_dumpsters_data.DumpstersCount2~\n\x13SmallGarbageService\x12g\n\x14GetSmallGarbageLevel\x12 .garbage_and_dumpsters_data.Time\x1a-.garbage_and_dumpsters_data.SmallGarbageLevel2~\n\x13LargeGarbageService\x12g\n\x14GetLargeGarbageLevel\x12 .garbage_and_dumpsters_data.Time\x1a-.garbage_and_dumpsters_data.LargeGarbageLevelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n garbage_and_dumpsters_data.proto\x12\x1agarbage_and_dumpsters_data\"\xa9\x01\n\x17\x44umpstersAndGarbageData\x12\x15\n\rcount_of_full\x18\x01 \x01(\x05\x12\x16\n\x0e\x63ount_of_empty\x18\x02 \x01(\x05\x12\x17\n\x0f\x63ount_of_closed\x18\x03 \x01(\x05\x12\x1b\n\x13small_garbage_level\x18\x04 \x01(\x05\x12\x1b\n\x13large_garbage_level\x18\x05 \x01(\x05\x12\x0c\n\x04time\x18\x06 \x01(\x05\"f\n\x0e\x44umpstersCount\x12\x15\n\rcount_of_full\x18\x01 \x01(\x05\x12\x16\n\x0e\x63ount_of_empty\x18\x02 \x01(\x05\x12\x17\n\x0f\x63ount_of_closed\x18\x03 \x01(\x05\x12\x0c\n\x04time\x18\x04 \x01(\x05\"V\n\x0cGarbageLevel\x12\x1b\n\x13small_garbage_level\x18\x01 \x01(\x05\x12\x1b\n\x13large_garbage_level\x18\x02 \x01(\x05\x12\x0c\n\x04time\x18\x03 \x01(\x05\"\x14\n\x04Time\x12\x0c\n\x04time\x18\x01 \x01(\x05\x32\x8d\x01\n\x1a\x44umpstersAndGarbageService\x12o\n\x16GetDumpstersAndGarbage\x12 .garbage_and_dumpsters_data.Time\x1a\x33.garbage_and_dumpsters_data.DumpstersAndGarbageData2u\n\x10\x44umpstersService\x12\x61\n\x11GetDumpstersCount\x12 .garbage_and_dumpsters_data.Time\x1a*.garbage_and_dumpsters_data.DumpstersCount2o\n\x0eGarbageService\x12]\n\x0fGetGarbageLevel\x12 .garbage_and_dumpsters_data.Time\x1a(.garbage_and_dumpsters_data.GarbageLevelb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'garbage_and_dumpsters_data_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_DUMPSTERSCOUNT']._serialized_start=64
-  _globals['_DUMPSTERSCOUNT']._serialized_end=152
-  _globals['_SMALLGARBAGELEVEL']._serialized_start=154
-  _globals['_SMALLGARBAGELEVEL']._serialized_end=202
-  _globals['_LARGEGARBAGELEVEL']._serialized_start=204
-  _globals['_LARGEGARBAGELEVEL']._serialized_end=252
-  _globals['_TIME']._serialized_start=254
-  _globals['_TIME']._serialized_end=274
-  _globals['_DUMPSTERSSERVICE']._serialized_start=276
-  _globals['_DUMPSTERSSERVICE']._serialized_end=393
-  _globals['_SMALLGARBAGESERVICE']._serialized_start=395
-  _globals['_SMALLGARBAGESERVICE']._serialized_end=521
-  _globals['_LARGEGARBAGESERVICE']._serialized_start=523
-  _globals['_LARGEGARBAGESERVICE']._serialized_end=649
+  _globals['_DUMPSTERSANDGARBAGEDATA']._serialized_start=65
+  _globals['_DUMPSTERSANDGARBAGEDATA']._serialized_end=234
+  _globals['_DUMPSTERSCOUNT']._serialized_start=236
+  _globals['_DUMPSTERSCOUNT']._serialized_end=338
+  _globals['_GARBAGELEVEL']._serialized_start=340
+  _globals['_GARBAGELEVEL']._serialized_end=426
+  _globals['_TIME']._serialized_start=428
+  _globals['_TIME']._serialized_end=448
+  _globals['_DUMPSTERSANDGARBAGESERVICE']._serialized_start=451
+  _globals['_DUMPSTERSANDGARBAGESERVICE']._serialized_end=592
+  _globals['_DUMPSTERSSERVICE']._serialized_start=594
+  _globals['_DUMPSTERSSERVICE']._serialized_end=711
+  _globals['_GARBAGESERVICE']._serialized_start=713
+  _globals['_GARBAGESERVICE']._serialized_end=824
 # @@protoc_insertion_point(module_scope)

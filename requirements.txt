@@ -1,4 +1,4 @@
-clickhouse-driver==0.2.9
+ultralytics==8.3.6
 docker==7.1.0
 matplotlib==3.9.1
 numpy==1.26.4
@@ -11,3 +11,4 @@ ncnn==1.0.20240820
 grpcio==1.66.1
 grpcio-tools==1.66.1
 protobuf==5.27.2
+psycopg2==2.9.10

@@ -1,8 +1,8 @@
 {
     "models": {
-        "model1_for_containers": "data/dumpsters_rec1.pt",
-        "model2_for_containers": "data/dumpsters_rec2.pt",
-        "model_for_small_trash": "data/small_trash_det.pt",
-        "model_for_large_trash": "data/large_trash_det.pt"
+        "model1_for_containers": "data/dumpsters_rec1.2_ncnn_model",
+        "model2_for_containers": "data/dumpsters_rec2_ncnn_model",
+        "model_for_small_trash": "data/small_trash_det_ncnn_model",
+        "model_for_large_trash": "data/large_trash_det_ncnn_model"
     }
 }
