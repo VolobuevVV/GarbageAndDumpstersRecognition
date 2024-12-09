@@ -72,7 +72,7 @@ def str_to_coordinates(string, h, w):
     return coordinates
 
 def get_boxes(model, path):
-    results = model.predict(path, conf=0.5, iou=0.7, agnostic_nms=True, verbose=False)
+    results = model.predict(path, conf=0.7, agnostic_nms=True, verbose=False)
     boxes = results[0].boxes
 
     xyxy_array = boxes.xyxy.cpu().numpy()
@@ -92,7 +92,7 @@ def compute_iou(xyxy1, xyxy2):
     return intersection / union if union > 0 else 0
 
 
-def combine_and_filter_boxes(xyxy1, conf1, cls1, xyxy2, conf2, cls2, threshold_iou=0.8):
+def combine_and_filter_boxes(xyxy1, conf1, cls1, xyxy2, conf2, cls2, threshold_iou=0.7):
     combined_results = {}
 
     for i in range(len(xyxy1)):
@@ -130,38 +130,6 @@ def combine_and_filter_boxes(xyxy1, conf1, cls1, xyxy2, conf2, cls2, threshold_i
 
     return filtered_results
 
-
-def crop_to_highest_container(frame, detections, is_boxes=True):
-    if is_boxes:
-        boxes = detections[0].boxes
-        y_values = boxes.xyxy[:, 1]
-    else:
-        if detections.size > 0:
-            y_values = detections[:, 1]
-        else:
-            return frame
-
-
-    if len(y_values) < 1:
-        return frame
-
-    min_index = np.argmin(y_values)
-
-    if is_boxes:
-        closest_container = (boxes.xyxy[min_index]).numpy()
-    else:
-        closest_container = detections[min_index]
-
-    x1, y1, x2, y2 = closest_container
-    container_height = (y2 - y1)
-    crop_y = y1 - (container_height // 10)
-
-    if crop_y > 0:
-        height, width, channels = frame.shape
-        cropped_image = frame[int(crop_y):height, 0:width]
-        return cropped_image
-    else:
-        return frame
 
 
 def crop_to_diagonal_between_containers(frame, detections, is_boxes=True):
@@ -239,86 +207,72 @@ def mask_rectangles(image, rectangles):
 
     return result_image
 
+def calculate_average_size(detections):
+    if len(detections) == 0:
+        return 0
+    sizes = [(det[2] - det[0]) * (det[3] - det[1]) for det in detections]
+    return np.mean(sizes)
+
 
 def small_trash_detect(image, model, detections, is_boxes=True):
     if is_boxes:
         count_of_containers = len(detections[0].boxes.data)
+        container_sizes = [det[0] for det in detections[0].boxes.data]
     else:
-        count_of_containers = detections.size
-    results = model(image, conf=0.25, agnostic_nms=True, verbose=False, max_det=50)
-    num_detections = len(results[0].boxes.data)
-    trash_level = num_detections / count_of_containers * math.log(1 + count_of_containers) if count_of_containers > 0 else 0
-    if trash_level < 0.1:
-        return 0
-    elif 0.1 <= trash_level < 0.25:
-        return 1
-    elif 0.25 <= trash_level < 0.5:
-        return 2
-    elif 0.5 <= trash_level < 1:
-        return 3
-    elif 1 <= trash_level < 1.25:
-        return 4
-    elif 1.25 <= trash_level < 1.5:
-        return 5
-    elif 1.5 <= trash_level < 1.75:
-        return 6
-    elif 1.75 <= trash_level < 2:
-        return 7
-    elif 2.25 <= trash_level < 2.5:
-        return 8
-    elif trash_level >= 2.5:
-        return 9
-    elif trash_level > 5:
-        return 10
+        count_of_containers = detections.shape[0]
+        container_sizes = detections
+    if count_of_containers > 0:
+        results = model(image, conf=0.5, agnostic_nms=True, verbose=False, max_det=50)
+        num_detections = len(results[0].boxes.data)
 
+        trash_detections = results[0].boxes.data[:, :4].tolist()
+        average_trash_size = calculate_average_size(trash_detections)
+        average_container_size = calculate_average_size(container_sizes)
+        size_factor = average_trash_size / (average_container_size if average_container_size > 0 else 1)
+        trash_level = (num_detections / count_of_containers) * math.log(num_detections) * size_factor * 5
+    else:
+        height, width = image.shape[:2]
+        half_area = (height // 2) * width
+        black_image = np.zeros((height // 2, width, 3), dtype=np.uint8)
+        combined_image = np.vstack((black_image, image[height // 2:]))
+        results = model(combined_image, conf=0.5, agnostic_nms=True, verbose=False, max_det=50)
+        num_detections = len(results[0].boxes.data)
+        trash_detections = results[0].boxes.data[:, :4].tolist()
+        total_trash_area = sum([(det[2] - det[0]) * (det[3] - det[1]) for det in trash_detections])
+        trash_level = total_trash_area / half_area * math.log(num_detections) * 20
+
+    return min(10, math.ceil(trash_level))
 
 def large_trash_detect(image, model, detections, is_boxes=True):
     if is_boxes:
         count_of_containers = len(detections[0].boxes.data)
+        container_sizes = [det[0] for det in detections[0].boxes.data]
     else:
-        count_of_containers = detections.size
-    results = model(image, conf=0.25, agnostic_nms=True, verbose=False, max_det=50)
-    num_detections = len(results[0].boxes.data)
-    trash_level = num_detections / count_of_containers * math.log(1 + count_of_containers) if count_of_containers > 0 else 0
-    if trash_level < 0.1:
-        return 0
-    elif 0.1 <= trash_level < 0.15:
-        return 1
-    elif 0.15 <= trash_level < 0.35:
-        return 2
-    elif 0.35 <= trash_level < 0.5:
-        return 3
-    elif 0.5 <= trash_level < 0.75:
-        return 4
-    elif 0.75 <= trash_level < 1:
-        return 5
-    elif 1 <= trash_level < 1.25:
-        return 6
-    elif 1.25 <= trash_level < 1.5:
-        return 7
-    elif 1.5 <= trash_level < 1.75:
-        return 8
-    elif trash_level >= 1.75:
-        return 9
-    elif trash_level > 3:
-        return 10
+        count_of_containers = detections.shape[0]
+        container_sizes = detections
 
+    if count_of_containers > 0:
+        results = model(image, conf=0.7, agnostic_nms=True, verbose=False, max_det=50)
+        num_detections = len(results[0].boxes.data)
 
-def crop_only_containers(frame, detections, is_boxes=True):
-    if is_boxes:
-        boxes = detections[0].boxes
-        if len(boxes) < 1:
-            return frame
-        else:
-            containers = np.array(boxes.xyxy)
-
+        trash_detections = results[0].boxes.data[:, :4].tolist()
+        average_trash_size = calculate_average_size(trash_detections)
+        average_container_size = calculate_average_size(container_sizes)
+        size_factor = average_trash_size / (average_container_size if average_container_size > 0 else 1)
+        trash_level = (num_detections / count_of_containers) * math.log(math.e + num_detections) * size_factor * 10
     else:
-        if detections.size > 0:
-            containers = np.array(detections)
-        else:
-            return frame
-    result_image = mask_rectangles(frame, containers)
-    return result_image
+        height, width = image.shape[:2]
+        half_area = (height // 2) * width
+        black_image = np.zeros((height // 2, width, 3), dtype=np.uint8)
+        combined_image = np.vstack((black_image, image[height // 2:]))
+        results = model(combined_image, conf=0.7, agnostic_nms=True, verbose=False, max_det=50)
+        num_detections = len(results[0].boxes.data)
+        trash_detections = results[0].boxes.data[:, :4].tolist()
+        total_trash_area = sum([(det[2] - det[0]) * (det[3] - det[1]) for det in trash_detections])
+        trash_level = total_trash_area / half_area * math.log(num_detections) * 20
+
+    return min(10, math.ceil(trash_level))
+
 
 
 def get_info(detections, is_boxes=True):
@@ -334,28 +288,6 @@ def get_info(detections, is_boxes=True):
         count_of_full = (cls == 2).sum().item()
 
         return count_of_closed, count_of_empty, count_of_full
-
-
-def confirmation_of_the_results(frame, results, model1, model2, is_boxes=True):
-    if is_boxes:
-        boxes = results[0].boxes
-        if len(boxes) < 1:
-            return None
-        else:
-            cls = np.array(boxes.cls)
-            conf = np.array(boxes.conf)
-            xyxy = np.array(boxes.xyxy)
-
-    else:
-        if results.size > 0:
-            cls = np.array([res['cls'].numpy() for res in results])
-            conf = np.array([res['conf'].numpy() for res in results])
-            xyxy = np.array([res['xyxy'].numpy() for res in results])
-        else:
-            return None
-    results_of_detection1 = model1(conf=0.85, agnostic_nms=True, verbose=False, max_det=50)
-    results_of_detection2 = model2(conf=0.85, agnostic_nms=True, verbose=False, max_det=50)
-    # Эту функцию надо дописать
 
 
 def combine_results(model1, model2, path):

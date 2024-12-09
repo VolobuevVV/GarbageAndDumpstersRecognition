@@ -42,7 +42,7 @@ def capture_stream(video_path: str, model1_for_containers: YOLO, model2_for_cont
           break
       current_time = time.time()
 
-      if current_time - last_processed_time >= time_interval:
+      if int(current_time) - int(last_processed_time) >= int(time_interval):
           last_processed_time = current_time
           frame = helper.select_area_for_detection(frame, detection_coordinates)
           filtered_results = helper.combine_results(model1_for_containers, model2_for_containers, frame)
