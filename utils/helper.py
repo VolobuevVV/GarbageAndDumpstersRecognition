@@ -229,7 +229,7 @@ def small_trash_detect(image, model, detections, is_boxes=True):
         average_trash_size = calculate_average_size(trash_detections)
         average_container_size = calculate_average_size(container_sizes)
         size_factor = average_trash_size / (average_container_size if average_container_size > 0 else 1)
-        trash_level = (num_detections / count_of_containers) * math.log(num_detections) * size_factor * 5
+        trash_level = (num_detections / count_of_containers) * math.log(1 + num_detections) * size_factor * 5
     else:
         height, width = image.shape[:2]
         half_area = (height // 2) * width
@@ -239,7 +239,7 @@ def small_trash_detect(image, model, detections, is_boxes=True):
         num_detections = len(results[0].boxes.data)
         trash_detections = results[0].boxes.data[:, :4].tolist()
         total_trash_area = sum([(det[2] - det[0]) * (det[3] - det[1]) for det in trash_detections])
-        trash_level = total_trash_area / half_area * math.log(num_detections) * 20
+        trash_level = total_trash_area / half_area * math.log(1 + num_detections) * 20
 
     return min(10, math.ceil(trash_level))
 
@@ -269,7 +269,7 @@ def large_trash_detect(image, model, detections, is_boxes=True):
         num_detections = len(results[0].boxes.data)
         trash_detections = results[0].boxes.data[:, :4].tolist()
         total_trash_area = sum([(det[2] - det[0]) * (det[3] - det[1]) for det in trash_detections])
-        trash_level = total_trash_area / half_area * math.log(num_detections) * 20
+        trash_level = total_trash_area / half_area * math.log(1 + num_detections) * 20
 
     return min(10, math.ceil(trash_level))
 
